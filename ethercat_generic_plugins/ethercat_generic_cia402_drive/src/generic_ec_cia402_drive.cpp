@@ -29,6 +29,7 @@ bool EcCiA402Drive::initialized() const {return initialized_;}
 
 void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
 {
+
   // Special case: ControlWord
   if (pdo_channels_info_[index].index == CiA402D_RPDO_CONTROLWORD) {
     if (is_operational_) {
@@ -97,13 +98,54 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
                   << " with status word :" << status_word_ << std::endl;
       }
     }
-    initialized_ = ((state_ == STATE_OPERATION_ENABLED) &&
-      (last_state_ == STATE_OPERATION_ENABLED)) ? true : false;
+    initialized_ = (state_ == STATE_OPERATION_ENABLED) && (last_state_ == STATE_OPERATION_ENABLED);
 
     last_status_word_ = status_word_;
     last_state_ = state_;
     counter_++;
   }
+}
+
+void EcCiA402Drive::offset_position() {
+
+  int max_expected_num_pdos = 100;
+  int num_updated_offsets = 0;
+  int index = 0;
+  if (use_position_offset_) {
+    while (index < max_expected_num_pdos) {
+      try {
+        // we want to shift state and command interface channel (position T+R PDO)
+        if (position_offset !=0 && (is_tpdo_position_channel(index) || is_rpdo_position_channel(index))) {
+          pdo_channels_info_[index].position_offset = position_offset;
+          num_updated_offsets++;
+
+          std::cout << "Updated position offset defined in xacro ros2_control file to " << position_offset << std::endl;
+        }
+      }
+      catch (...) {
+//        break;
+        throw "Driver expects TPDO and RPDO for position interfaces defined in config file." ;
+      }
+
+      index++;
+
+      // TPDO and RPDO
+      if (num_updated_offsets == 2) break;
+    }
+  }
+
+}
+
+bool EcCiA402Drive::is_tpdo_position_channel(size_t index)
+{
+  return ((pdo_channels_info_[index].pdo_type == ethercat_interface::TPDO) &&
+          (pdo_channels_info_[index].interface_name.compare("position") == 0));
+}
+
+bool EcCiA402Drive::is_rpdo_position_channel(size_t index)
+{
+  return ((pdo_channels_info_[index].pdo_type == ethercat_interface::RPDO) &&
+          (pdo_channels_info_[index].interface_name.compare("position") == 0));
 }
 
 bool EcCiA402Drive::setupSlave(
@@ -135,6 +177,10 @@ bool EcCiA402Drive::setupSlave(
     fault_reset_command_interface_index_ = std::stoi(paramters_["command_interface/reset_fault"]);
   }
 
+  if (paramters_.find("position_offset") != paramters_.end()) {
+    position_offset = std::stof(paramters_["position_offset"]);
+  }
+
   return true;
 }
 
@@ -147,6 +193,9 @@ bool EcCiA402Drive::setup_from_config(YAML::Node drive_config)
   }
   if (drive_config["auto_state_transitions"]) {
     auto_state_transitions_ = drive_config["auto_state_transitions"].as<bool>();
+  }
+  if (drive_config["use_position_offset"]) {
+    use_position_offset_ = drive_config["use_position_offset"].as<bool>();
   }
   return true;
 }

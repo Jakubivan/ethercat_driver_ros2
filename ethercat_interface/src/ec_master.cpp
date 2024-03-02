@@ -480,6 +480,8 @@ void EcMaster::checkSlaveStates()
   }
 }
 
+// TODO add function to read values from motor and set their offsets
+
 
 void EcMaster::printWarning(const std::string & message)
 {

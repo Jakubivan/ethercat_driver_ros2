@@ -327,6 +327,9 @@ CallbackReturn EthercatDriver::on_activate(
     }
     if (isAllInit) {
       running = false;
+      for (auto & module : ec_modules_) {
+        module->offset_position();
+      }
     }
     // calculate next shot. carry over nanoseconds into microseconds.
     t.tv_nsec += master_.getInterval();

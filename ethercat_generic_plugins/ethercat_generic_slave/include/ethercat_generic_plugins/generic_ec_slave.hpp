@@ -35,7 +35,6 @@ public:
   GenericEcSlave();
   virtual ~GenericEcSlave();
   virtual int assign_activate_dc_sync();
-
   virtual void processData(size_t index, uint8_t * domain_address);
 
   virtual const ec_sync_info_t * syncs();

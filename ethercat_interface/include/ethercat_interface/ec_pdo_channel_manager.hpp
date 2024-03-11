@@ -112,12 +112,13 @@ public:
       if (pdo_type == TPDO) {
           ec_read(domain_address);
           if (interface_index >= 0) {
+            if (last_value == 0.0) last_value = -position_offset;
             state_interface_ptr_->at(interface_index) = last_value + position_offset;  // position_offset defined in xacro ros2_control file
           }
       } else if (pdo_type == RPDO && allow_ec_write) {
           if (interface_index >= 0 &&
               !std::isnan(command_interface_ptr_->at(interface_index)) &&
-              command_interface_ptr_->at(interface_index) != position_offset &&
+              command_interface_ptr_->at(interface_index) != 0.0 &&
               abs((factor * (command_interface_ptr_->at(interface_index) - position_offset) + offset) - default_value) < 16697 /*~0.2rad max diff (safety)*/ &&
               !override_command)
           {

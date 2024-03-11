@@ -16,22 +16,22 @@
 
 #include <numeric>
 
-#include "ethercat_generic_plugins/generic_ec_cia402_drive.hpp"
+#include "ethercat_generic_plugins/generic_ec_senso_drive.hpp"
 
 namespace ethercat_generic_plugins
 {
 
-EcCiA402Drive::EcCiA402Drive()
+EcSensoDrive::EcSensoDrive()
 : GenericEcSlave() {}
-EcCiA402Drive::~EcCiA402Drive() {}
+EcSensoDrive::~EcSensoDrive() {}
 
-bool EcCiA402Drive::initialized() const {return initialized_;}
+bool EcSensoDrive::initialized() const {return initialized_;}
 
-void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
+void EcSensoDrive::processData(size_t index, uint8_t * domain_address)
 {
 
   // Special case: ControlWord
-  if (pdo_channels_info_[index].index == CiA402D_RPDO_CONTROLWORD) {
+  if (pdo_channels_info_[index].index == SENSOD_RPDO_CONTROLWORD) {
     if (is_operational_) {
       if (fault_reset_command_interface_index_ >= 0) {
         if (command_interface_ptr_->at(fault_reset_command_interface_index_) == 0) {
@@ -55,7 +55,7 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
   }
 
   // setup current position as default position
-  if (pdo_channels_info_[index].index == CiA402D_RPDO_POSITION) {
+  if (pdo_channels_info_[index].index == SENSOD_RPDO_POSITION) {
     if (mode_of_operation_display_ != ModeOfOperation::MODE_NO_MODE) {
       pdo_channels_info_[index].default_value =
         pdo_channels_info_[index].factor * last_position_ +
@@ -66,7 +66,7 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
   }
 
   // setup mode of operation
-  if (pdo_channels_info_[index].index == CiA402D_RPDO_MODE_OF_OPERATION) {
+  if (pdo_channels_info_[index].index == SENSOD_RPDO_MODE_OF_OPERATION) {
     if (mode_of_operation_ >= 0 && mode_of_operation_ <= 10) {
       pdo_channels_info_[index].default_value = mode_of_operation_;
     }
@@ -75,16 +75,16 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
   pdo_channels_info_[index].ec_update(domain_address);
 
   // get mode_of_operation_display_
-  if (pdo_channels_info_[index].index == CiA402D_TPDO_MODE_OF_OPERATION_DISPLAY) {
+  if (pdo_channels_info_[index].index == SENSOD_TPDO_MODE_OF_OPERATION_DISPLAY) {
     mode_of_operation_display_ = pdo_channels_info_[index].last_value;
   }
 
-  if (pdo_channels_info_[index].index == CiA402D_TPDO_POSITION) {
+  if (pdo_channels_info_[index].index == SENSOD_TPDO_POSITION) {
     last_position_ = pdo_channels_info_[index].last_value;
   }
 
   // Special case: StatusWord
-  if (pdo_channels_info_[index].index == CiA402D_TPDO_STATUSWORD) {
+  if (pdo_channels_info_[index].index == SENSOD_TPDO_STATUSWORD) {
     status_word_ = pdo_channels_info_[index].last_value;
   }
 
@@ -106,7 +106,7 @@ void EcCiA402Drive::processData(size_t index, uint8_t * domain_address)
   }
 }
 
-void EcCiA402Drive::offset_position() {
+void EcSensoDrive::offset_position() {
 
   int max_expected_num_pdos = 100;
   int num_updated_offsets = 0;
@@ -136,19 +136,19 @@ void EcCiA402Drive::offset_position() {
 
 }
 
-bool EcCiA402Drive::is_tpdo_position_channel(size_t index)
+bool EcSensoDrive::is_tpdo_position_channel(size_t index)
 {
   return ((pdo_channels_info_[index].pdo_type == ethercat_interface::TPDO) &&
           (pdo_channels_info_[index].interface_name.compare("position") == 0));
 }
 
-bool EcCiA402Drive::is_rpdo_position_channel(size_t index)
+bool EcSensoDrive::is_rpdo_position_channel(size_t index)
 {
   return ((pdo_channels_info_[index].pdo_type == ethercat_interface::RPDO) &&
           (pdo_channels_info_[index].interface_name.compare("position") == 0));
 }
 
-bool EcCiA402Drive::setupSlave(
+bool EcSensoDrive::setupSlave(
   std::unordered_map<std::string, std::string> slave_paramters,
   std::vector<double> * state_interface,
   std::vector<double> * command_interface)
@@ -162,7 +162,7 @@ bool EcCiA402Drive::setupSlave(
       return false;
     }
   } else {
-    std::cerr << "EcCiA402Drive: failed to find 'slave_config' tag in URDF." << std::endl;
+    std::cerr << "EcSensoDrive: failed to find 'slave_config' tag in URDF." << std::endl;
     return false;
   }
 
@@ -184,10 +184,10 @@ bool EcCiA402Drive::setupSlave(
   return true;
 }
 
-bool EcCiA402Drive::setup_from_config(YAML::Node drive_config)
+bool EcSensoDrive::setup_from_config(YAML::Node drive_config)
 {
   if (!GenericEcSlave::setup_from_config(drive_config)) {return false;}
-  // additional configuration parameters for CiA402 Drives
+  // additional configuration parameters for SENSO Drives
   if (drive_config["auto_fault_reset"]) {
     auto_fault_reset_ = drive_config["auto_fault_reset"].as<bool>();
   }
@@ -200,16 +200,16 @@ bool EcCiA402Drive::setup_from_config(YAML::Node drive_config)
   return true;
 }
 
-bool EcCiA402Drive::setup_from_config_file(std::string config_file)
+bool EcSensoDrive::setup_from_config_file(std::string config_file)
 {
   // Read drive configuration from YAML file
   try {
     slave_config_ = YAML::LoadFile(config_file);
   } catch (const YAML::ParserException & ex) {
-    std::cerr << "EcCiA402Drive: failed to load drive configuration: " << ex.what() << std::endl;
+    std::cerr << "EcSensoDrive: failed to load drive configuration: " << ex.what() << std::endl;
     return false;
   } catch (const YAML::BadFile & ex) {
-    std::cerr << "EcCiA402Drive: failed to load drive configuration: " << ex.what() << std::endl;
+    std::cerr << "EcSensoDrive: failed to load drive configuration: " << ex.what() << std::endl;
     return false;
   }
   if (!setup_from_config(slave_config_)) {
@@ -219,7 +219,7 @@ bool EcCiA402Drive::setup_from_config_file(std::string config_file)
 }
 
 /** returns device state based upon the status_word */
-DeviceState EcCiA402Drive::deviceState(uint16_t status_word)
+DeviceState EcSensoDrive::deviceState(uint16_t status_word)
 {
   if ((status_word & 0b01001111) == 0b00000000) {
     return STATE_NOT_READY_TO_SWITCH_ON;
@@ -242,7 +242,7 @@ DeviceState EcCiA402Drive::deviceState(uint16_t status_word)
 }
 
 /** returns the control word that will take device from state to next desired state */
-uint16_t EcCiA402Drive::transition(DeviceState state, uint16_t control_word)
+uint16_t EcSensoDrive::transition(DeviceState state, uint16_t control_word)
 {
   switch (state) {
     case STATE_START:                     // -> STATE_NOT_READY_TO_SWITCH_ON (automatic)
@@ -278,4 +278,4 @@ uint16_t EcCiA402Drive::transition(DeviceState state, uint16_t control_word)
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(ethercat_generic_plugins::EcCiA402Drive, ethercat_interface::EcSlave)
+PLUGINLIB_EXPORT_CLASS(ethercat_generic_plugins::EcSensoDrive, ethercat_interface::EcSlave)

@@ -14,8 +14,8 @@
 //
 // Author: Maciej Bednarczyk (macbednarczyk@gmail.com)
 
-#ifndef ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_CIA402_DRIVE_HPP_
-#define ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_CIA402_DRIVE_HPP_
+#ifndef ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_SENSO_DRIVE_HPP_
+#define ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_SENSO_DRIVE_HPP_
 
 #include <vector>
 #include <string>
@@ -26,21 +26,25 @@
 #include "ethercat_interface/ec_slave.hpp"
 #include "ethercat_interface/ec_pdo_channel_manager.hpp"
 #include "ethercat_generic_plugins/generic_ec_slave.hpp"
-#include "ethercat_generic_plugins/cia402_common_defs.hpp"
+#include "ethercat_generic_plugins/senso_common_defs.hpp"
 
 namespace ethercat_generic_plugins
 {
 
-class EcCiA402Drive : public GenericEcSlave
+class EcSensoDrive : public GenericEcSlave
 {
 public:
-  EcCiA402Drive();
-  virtual ~EcCiA402Drive();
+  EcSensoDrive();
+  virtual ~EcSensoDrive();
   /** Returns true if drive has reached "operation enabled" state.
    *  The transition through the state machine is handled automatically. */
-  bool initialized() const;
+  virtual bool initialized() const;
+  void offset_position();
 
   virtual void processData(size_t index, uint8_t * domain_address);
+
+  bool is_tpdo_position_channel(size_t index);
+  bool is_rpdo_position_channel(size_t index);
 
   virtual bool setupSlave(
     std::unordered_map<std::string, std::string> slave_paramters,
@@ -60,9 +64,11 @@ protected:
   bool initialized_ = false;
   bool auto_fault_reset_ = false;
   bool auto_state_transitions_ = true;
+  bool use_position_offset_ = true;
   bool fault_reset_ = false;
   int fault_reset_command_interface_index_ = -1;
   bool last_fault_reset_command_ = false;
+  double position_offset = 0.0;
   double last_position_ = std::numeric_limits<double>::quiet_NaN();
 
   /** returns device state based upon the status_word */
@@ -76,4 +82,4 @@ protected:
 };
 }  // namespace ethercat_generic_plugins
 
-#endif  // ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_CIA402_DRIVE_HPP_
+#endif  // ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_SENSO_DRIVE_HPP_

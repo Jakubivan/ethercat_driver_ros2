@@ -108,24 +108,27 @@ public:
 
   void ec_update(uint8_t * domain_address)
   {
-    // update state interface
-    if (pdo_type == TPDO) {
-      ec_read(domain_address);
-      if (interface_index >= 0) {
-        state_interface_ptr_->at(interface_index) = last_value;
+      // update state interface
+      if (pdo_type == TPDO) {
+          ec_read(domain_address);
+          if (interface_index >= 0) {
+            if (last_value == 0.0) last_value = -position_offset;
+            state_interface_ptr_->at(interface_index) = last_value + position_offset;  // position_offset defined in xacro ros2_control file
+          }
+      } else if (pdo_type == RPDO && allow_ec_write) {
+          if (interface_index >= 0 &&
+              !std::isnan(command_interface_ptr_->at(interface_index)) &&
+              command_interface_ptr_->at(interface_index) != 0.0 &&
+              abs((factor * (command_interface_ptr_->at(interface_index) - position_offset) + offset) - default_value) < 16697 /*~0.2rad max diff (safety)*/ &&
+              !override_command)
+          {
+              ec_write(domain_address, factor * (command_interface_ptr_->at(interface_index) - position_offset) + offset);
+          } else {
+              if (!std::isnan(default_value)) {
+                  ec_write(domain_address, default_value);
+              }
+          }
       }
-    } else if (pdo_type == RPDO && allow_ec_write) {
-      if (interface_index >= 0 &&
-        !std::isnan(command_interface_ptr_->at(interface_index)) &&
-        !override_command)
-      {
-        ec_write(domain_address, factor * command_interface_ptr_->at(interface_index) + offset);
-      } else {
-        if (!std::isnan(default_value)) {
-          ec_write(domain_address, default_value);
-        }
-      }
-    }
   }
 
   bool load_from_config(YAML::Node channel_config)
@@ -216,6 +219,7 @@ public:
   bool override_command = false;
   double factor = 1;
   double offset = 0;
+  double position_offset = 0;
 
 private:
   std::vector<double> * command_interface_ptr_;

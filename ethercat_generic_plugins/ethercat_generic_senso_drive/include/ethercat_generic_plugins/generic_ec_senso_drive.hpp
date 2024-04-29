@@ -64,7 +64,6 @@ protected:
   bool initialized_ = false;
   bool auto_fault_reset_ = false;
   bool auto_state_transitions_ = true;
-  bool use_position_offset_ = true;
   bool fault_reset_ = false;
   int fault_reset_command_interface_index_ = -1;
   bool last_fault_reset_command_ = false;

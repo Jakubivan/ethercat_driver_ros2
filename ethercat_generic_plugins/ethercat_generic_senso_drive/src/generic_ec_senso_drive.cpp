@@ -112,39 +112,37 @@ void EcSensoDrive::offset_position(uint32_t product_id_) {
   int num_updated_offsets = 0;
   long unsigned int index = 0;
 
-  if (use_position_offset_) {
-    while (index  < pdo_channels_info_.size()) {
-      try {
-        // we want to shift state and command interface channel (position T+R PDO)
-        if (is_tpdo_position_channel(index)) {
-          pdo_channels_info_[index].position_offset = position_offset_;
-          num_updated_offsets++;
+  while (index  < pdo_channels_info_.size()) {
+    try {
+      // we want to shift state and command interface channel (position T+R PDO)
+      if (is_tpdo_position_channel(index)) {
+        pdo_channels_info_[index].position_offset = position_offset_;
+        num_updated_offsets++;
 
 
-          std::cout << "Slave product_id_: " << std::hex << product_id_ << ", updated TxPDO position offset  to value: " << position_offset_ << std::endl;
-        }
-
-        if (is_rpdo_position_channel(index)) {
-          pdo_channels_info_[index].position_offset = position_offset_;
-          num_updated_offsets++;
-
-          std::cout << "Slave product_id_: " << std::hex << product_id_ << ", updated RxPDO position offset  to value: " << position_offset_ << std::endl;
-        }
-
-      }
-      catch (...) {
-        throw "Exception in 'offset_position()' function." ;
+        std::cout << "Slave product_id_: " << std::hex << product_id_ << ", updated TxPDO position offset  to value: " << position_offset_ << std::endl;
       }
 
-      index++;
+      if (is_rpdo_position_channel(index)) {
+        pdo_channels_info_[index].position_offset = position_offset_;
+        num_updated_offsets++;
 
-      // TPDO and RPDO
-      if (num_updated_offsets == 2) break;
+        std::cout << "Slave product_id_: " << std::hex << product_id_ << ", updated RxPDO position offset  to value: " << position_offset_ << std::endl;
+      }
+
+    }
+    catch (...) {
+      throw "Exception in 'offset_position()' function." ;
     }
 
-    if (num_updated_offsets != 2) {
-      std::cerr << "SensoJoint product_id_: " << product_id_ << ", failed to update position offset for all PDOs" << std::endl;
-    }
+    index++;
+
+    // TPDO and RPDO
+    if (num_updated_offsets == 2) break;
+  }
+
+  if (num_updated_offsets != 2) {
+    std::cerr << "SensoJoint product_id_: " << product_id_ << ", failed to update position offset for all PDOs" << std::endl;
   }
 
 }
@@ -206,9 +204,6 @@ bool EcSensoDrive::setup_from_config(YAML::Node drive_config)
   }
   if (drive_config["auto_state_transitions"]) {
     auto_state_transitions_ = drive_config["auto_state_transitions"].as<bool>();
-  }
-  if (drive_config["use_position_offset"]) {
-    use_position_offset_ = drive_config["use_position_offset"].as<bool>();
   }
   return true;
 }

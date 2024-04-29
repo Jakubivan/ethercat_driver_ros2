@@ -106,31 +106,44 @@ void EcSensoDrive::processData(size_t index, uint8_t * domain_address)
   }
 }
 
-void EcSensoDrive::offset_position() {
+void EcSensoDrive::offset_position(uint32_t product_id_) {
 
-  int max_expected_num_pdos = 100;
+  // int max_expected_num_pdos = 100;
   int num_updated_offsets = 0;
-  int index = 0;
+  long unsigned int index = 0;
+
   if (use_position_offset_) {
-    while (index < max_expected_num_pdos) {
+    while (index  < pdo_channels_info_.size()) {
       try {
         // we want to shift state and command interface channel (position T+R PDO)
-        if (position_offset !=0 && (is_tpdo_position_channel(index) || is_rpdo_position_channel(index))) {
-          pdo_channels_info_[index].position_offset = position_offset;
+        if (is_tpdo_position_channel(index)) {
+          pdo_channels_info_[index].position_offset = position_offset_;
           num_updated_offsets++;
 
-          std::cout << "Updated position offset defined in xacro ros2_control file to " << position_offset << std::endl;
+
+          std::cout << "Slave product_id_: " << std::hex << product_id_ << ", updated TxPDO position offset  to value: " << position_offset_ << std::endl;
         }
+
+        if (is_rpdo_position_channel(index)) {
+          pdo_channels_info_[index].position_offset = position_offset_;
+          num_updated_offsets++;
+
+          std::cout << "Slave product_id_: " << std::hex << product_id_ << ", updated RxPDO position offset  to value: " << position_offset_ << std::endl;
+        }
+
       }
       catch (...) {
-//        break;
-        throw "Driver expects TPDO and RPDO for position interfaces defined in config file." ;
+        throw "Exception in 'offset_position()' function." ;
       }
 
       index++;
 
       // TPDO and RPDO
       if (num_updated_offsets == 2) break;
+    }
+
+    if (num_updated_offsets != 2) {
+      std::cerr << "SensoJoint product_id_: " << product_id_ << ", failed to update position offset for all PDOs" << std::endl;
     }
   }
 
@@ -178,7 +191,7 @@ bool EcSensoDrive::setupSlave(
   }
 
   if (paramters_.find("position_offset") != paramters_.end()) {
-    position_offset = std::stof(paramters_["position_offset"]);
+    position_offset_ = std::stof(paramters_["position_offset"]);
   }
 
   return true;

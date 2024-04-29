@@ -328,7 +328,8 @@ CallbackReturn EthercatDriver::on_activate(
     if (isAllInit) {
       running = false;
       for (auto & module : ec_modules_) {
-        module->offset_position();
+        module->offset_position(module->product_id_);
+        
       }
     }
     // calculate next shot. carry over nanoseconds into microseconds.

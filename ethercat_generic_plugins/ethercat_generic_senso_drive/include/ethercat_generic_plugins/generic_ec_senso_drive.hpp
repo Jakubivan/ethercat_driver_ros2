@@ -39,7 +39,7 @@ public:
   /** Returns true if drive has reached "operation enabled" state.
    *  The transition through the state machine is handled automatically. */
   virtual bool initialized() const;
-  void offset_position();
+  void offset_position(uint32_t product_id_);
 
   virtual void processData(size_t index, uint8_t * domain_address);
 
@@ -68,7 +68,7 @@ protected:
   bool fault_reset_ = false;
   int fault_reset_command_interface_index_ = -1;
   bool last_fault_reset_command_ = false;
-  double position_offset = 0.0;
+  double position_offset_ = 0.0;
   double last_position_ = std::numeric_limits<double>::quiet_NaN();
 
   /** returns device state based upon the status_word */

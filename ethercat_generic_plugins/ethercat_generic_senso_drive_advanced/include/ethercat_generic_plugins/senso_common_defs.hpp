@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef ETHERCAT_GENERIC_PLUGINS__SENSO_COMMON_DEFS_HPP_
-#define ETHERCAT_GENERIC_PLUGINS__SENSO_COMMON_DEFS_HPP_
+#ifndef ETHERCAT_GENERIC_PLUGINS__SENSO_ADVANCED_COMMON_DEFS_HPP_
+#define ETHERCAT_GENERIC_PLUGINS__SENSO_ADVANCED_COMMON_DEFS_HPP_
 
 #define SENSOD_RPDO_CONTROLWORD  ((uint16_t) 0x6040)
 #define SENSOD_RPDO_POSITION  ((uint16_t) 0x277A)  // edited for SensoDrive advanced modes
@@ -72,4 +72,4 @@ const std::map<DeviceState, std::string> DEVICE_STATE_STR = {
   {STATE_UNDEFINED, "Undefined State"}
 };
 
-#endif  // ETHERCAT_GENERIC_PLUGINS__SENSO_COMMON_DEFS_HPP_
+#endif  // ETHERCAT_GENERIC_PLUGINS__SENSO_ADVANCED_COMMON_DEFS_HPP_

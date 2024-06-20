@@ -22,31 +22,31 @@
 
 #include "gmock/gmock.h"
 
-#include "ethercat_generic_plugins/generic_ec_senso_drive.hpp"
+#include "ethercat_generic_plugins/generic_ec_senso_drive_advanced.hpp"
 
 // subclassing and friending so we can access member variables
-class FriendEcSensoDrive : public ethercat_generic_plugins::EcSensoDrive
+class FriendEcSensoDriveAdvanced : public ethercat_generic_plugins::EcSensoDriveAdvanced
 {
-  FRIEND_TEST(EcSensoDriveTest, SlaveSetupDriveFromConfig);
-  FRIEND_TEST(EcSensoDriveTest, SlaveSetupPdoChannels);
-  FRIEND_TEST(EcSensoDriveTest, SlaveSetupSyncs);
-  FRIEND_TEST(EcSensoDriveTest, SlaveSetupDomains);
-  FRIEND_TEST(EcSensoDriveTest, EcReadTPDOToStateInterface);
-  FRIEND_TEST(EcSensoDriveTest, EcWriteRPDOFromCommandInterface);
-  FRIEND_TEST(EcSensoDriveTest, EcWriteRPDODefaultValue);
-  // FRIEND_TEST(EcSensoDriveTest, FaultReset);
-  FRIEND_TEST(EcSensoDriveTest, SwitchModeOfOperation);
-  FRIEND_TEST(EcSensoDriveTest, EcWriteDefaultTargetPosition);
+  FRIEND_TEST(EcSensoDriveAdvancedTest, SlaveSetupDriveFromConfig);
+  FRIEND_TEST(EcSensoDriveAdvancedTest, SlaveSetupPdoChannels);
+  FRIEND_TEST(EcSensoDriveAdvancedTest, SlaveSetupSyncs);
+  FRIEND_TEST(EcSensoDriveAdvancedTest, SlaveSetupDomains);
+  FRIEND_TEST(EcSensoDriveAdvancedTest, EcReadTPDOToStateInterface);
+  FRIEND_TEST(EcSensoDriveAdvancedTest, EcWriteRPDOFromCommandInterface);
+  FRIEND_TEST(EcSensoDriveAdvancedTest, EcWriteRPDODefaultValue);
+  // FRIEND_TEST(EcSensoDriveAdvancedTest, FaultReset);
+  FRIEND_TEST(EcSensoDriveAdvancedTest, SwitchModeOfOperation);
+  FRIEND_TEST(EcSensoDriveAdvancedTest, EcWriteDefaultTargetPosition);
 };
 
-class EcSensoDriveTest : public ::testing::Test
+class EcSensoDriveAdvancedTest : public ::testing::Test
 {
 public:
   void SetUp();
   void TearDown();
 
 protected:
-  std::unique_ptr<FriendEcSensoDrive> plugin_;
+  std::unique_ptr<FriendEcSensoDriveAdvanced> plugin_;
 };
 
 #endif  // TEST_GENERIC_EC_SENSO_DRIVE_HPP_

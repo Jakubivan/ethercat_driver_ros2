@@ -14,8 +14,8 @@
 //
 // Author: Maciej Bednarczyk (macbednarczyk@gmail.com)
 
-#ifndef ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_SENSO_DRIVE_HPP_
-#define ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_SENSO_DRIVE_HPP_
+#ifndef ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_SENSO_DRIVE_ADVANCED_HPP_
+#define ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_SENSO_DRIVE_ADVANCED_HPP_
 
 #include <vector>
 #include <string>
@@ -31,11 +31,11 @@
 namespace ethercat_generic_plugins
 {
 
-class EcSensoDrive : public GenericEcSlave
+class EcSensoDriveAdvanced : public GenericEcSlave
 {
 public:
-  EcSensoDrive();
-  virtual ~EcSensoDrive();
+  EcSensoDriveAdvanced();
+  virtual ~EcSensoDriveAdvanced();
   /** Returns true if drive has reached "operation enabled" state.
    *  The transition through the state machine is handled automatically. */
   virtual bool initialized() const;
@@ -81,4 +81,4 @@ protected:
 };
 }  // namespace ethercat_generic_plugins
 
-#endif  // ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_SENSO_DRIVE_HPP_
+#endif  // ETHERCAT_GENERIC_PLUGINS__GENERIC_EC_SENSO_DRIVE_ADVANCED_HPP_

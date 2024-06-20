@@ -16,7 +16,7 @@
 #include <limits>
 #include <pluginlib/class_loader.hpp>
 #include "ethercat_interface/ec_slave.hpp"
-#include "test_generic_ec_senso_drive.hpp"
+#include "test_generic_ec_senso_drive_advanced.hpp"
 
 const char test_drive_config[] =
   R"(
@@ -52,17 +52,17 @@ tpdo:  # TxPDO
       - {index: 0x2205, sub_index: 2, type: int16, state_interface: analog_input2}  # Analog input
 )";
 
-void EcSensoDriveTest::SetUp()
+void EcSensoDriveAdvancedTest::SetUp()
 {
-  plugin_ = std::make_unique<FriendEcSensoDrive>();
+  plugin_ = std::make_unique<FriendEcSensoDriveAdvanced>();
 }
 
-void EcSensoDriveTest::TearDown()
+void EcSensoDriveAdvancedTest::TearDown()
 {
   plugin_.reset(nullptr);
 }
 
-TEST_F(EcSensoDriveTest, SlaveSetupNoDriveConfig)
+TEST_F(EcSensoDriveAdvancedTest, SlaveSetupNoDriveConfig)
 {
   SetUp();
   std::vector<double> state_interface = {0};
@@ -79,7 +79,7 @@ TEST_F(EcSensoDriveTest, SlaveSetupNoDriveConfig)
   );
 }
 
-TEST_F(EcSensoDriveTest, SlaveSetupMissingFileDriveConfig)
+TEST_F(EcSensoDriveAdvancedTest, SlaveSetupMissingFileDriveConfig)
 {
   SetUp();
   std::vector<double> state_interface = {0};
@@ -97,7 +97,7 @@ TEST_F(EcSensoDriveTest, SlaveSetupMissingFileDriveConfig)
   );
 }
 
-TEST_F(EcSensoDriveTest, SlaveSetupDriveFromConfig)
+TEST_F(EcSensoDriveAdvancedTest, SlaveSetupDriveFromConfig)
 {
   SetUp();
   ASSERT_EQ(
@@ -124,7 +124,7 @@ TEST_F(EcSensoDriveTest, SlaveSetupDriveFromConfig)
   ASSERT_EQ(plugin_->pdo_channels_info_[4].data_type, "uint16");
 }
 
-TEST_F(EcSensoDriveTest, SlaveSetupPdoChannels)
+TEST_F(EcSensoDriveAdvancedTest, SlaveSetupPdoChannels)
 {
   SetUp();
   plugin_->setup_from_config(YAML::Load(test_drive_config));
@@ -139,7 +139,7 @@ TEST_F(EcSensoDriveTest, SlaveSetupPdoChannels)
   ASSERT_EQ(channels[11].subindex, 0x01);
 }
 
-TEST_F(EcSensoDriveTest, SlaveSetupSyncs)
+TEST_F(EcSensoDriveAdvancedTest, SlaveSetupSyncs)
 {
   SetUp();
   plugin_->setup_from_config(YAML::Load(test_drive_config));
@@ -162,7 +162,7 @@ TEST_F(EcSensoDriveTest, SlaveSetupSyncs)
   ASSERT_EQ(syncs[3].watchdog_mode, EC_WD_DISABLE);
 }
 
-TEST_F(EcSensoDriveTest, SlaveSetupDomains)
+TEST_F(EcSensoDriveAdvancedTest, SlaveSetupDomains)
 {
   SetUp();
   plugin_->setup_from_config(YAML::Load(test_drive_config));
@@ -174,7 +174,7 @@ TEST_F(EcSensoDriveTest, SlaveSetupDomains)
   ASSERT_EQ(domains[0][12], 12);
 }
 
-TEST_F(EcSensoDriveTest, EcReadTPDOToStateInterface)
+TEST_F(EcSensoDriveAdvancedTest, EcReadTPDOToStateInterface)
 {
   SetUp();
   std::unordered_map<std::string, std::string> slave_paramters;
@@ -191,7 +191,7 @@ TEST_F(EcSensoDriveTest, EcReadTPDOToStateInterface)
   ASSERT_EQ(plugin_->state_interface_ptr_->at(1), 42);
 }
 
-TEST_F(EcSensoDriveTest, EcWriteRPDOFromCommandInterface)
+TEST_F(EcSensoDriveAdvancedTest, EcWriteRPDOFromCommandInterface)
 {
   SetUp();
   std::unordered_map<std::string, std::string> slave_paramters;
@@ -209,7 +209,7 @@ TEST_F(EcSensoDriveTest, EcWriteRPDOFromCommandInterface)
   ASSERT_EQ(EC_READ_S16(domain_address), 42);
 }
 
-TEST_F(EcSensoDriveTest, EcWriteRPDODefaultValue)
+TEST_F(EcSensoDriveAdvancedTest, EcWriteRPDODefaultValue)
 {
   SetUp();
   plugin_->setup_from_config(YAML::Load(test_drive_config));
@@ -221,7 +221,7 @@ TEST_F(EcSensoDriveTest, EcWriteRPDODefaultValue)
   ASSERT_EQ(EC_READ_S16(domain_address), -5);
 }
 
-// TEST_F(EcSensoDriveTest, FaultReset)
+// TEST_F(EcSensoDriveAdvancedTest, FaultReset)
 // {
 //   std::unordered_map<std::string, std::string> slave_paramters;
 //   std::vector<double> command_interface = {0, 1};
@@ -249,7 +249,7 @@ TEST_F(EcSensoDriveTest, EcWriteRPDODefaultValue)
 //   ASSERT_EQ(plugin_->pdo_channels_info_[4].default_value, 0b10000000);
 // }
 
-TEST_F(EcSensoDriveTest, SwitchModeOfOperation)
+TEST_F(EcSensoDriveAdvancedTest, SwitchModeOfOperation)
 {
   std::unordered_map<std::string, std::string> slave_paramters;
   std::vector<double> command_interface = {
@@ -271,7 +271,7 @@ TEST_F(EcSensoDriveTest, SwitchModeOfOperation)
   ASSERT_EQ(plugin_->mode_of_operation_display_, 9);
 }
 
-TEST_F(EcSensoDriveTest, EcWriteDefaultTargetPosition)
+TEST_F(EcSensoDriveAdvancedTest, EcWriteDefaultTargetPosition)
 {
   std::unordered_map<std::string, std::string> slave_paramters;
   std::vector<double> command_interface = {

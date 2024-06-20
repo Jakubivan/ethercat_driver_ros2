@@ -16,18 +16,18 @@
 
 #include <numeric>
 
-#include "ethercat_generic_plugins/generic_ec_senso_drive.hpp"
+#include "ethercat_generic_plugins/generic_ec_senso_drive_advanced.hpp"
 
 namespace ethercat_generic_plugins
 {
 
-EcSensoDrive::EcSensoDrive()
+EcSensoDriveAdvanced::EcSensoDriveAdvanced()
 : GenericEcSlave() {}
-EcSensoDrive::~EcSensoDrive() {}
+EcSensoDriveAdvanced::~EcSensoDriveAdvanced() {}
 
-bool EcSensoDrive::initialized() const {return initialized_;}
+bool EcSensoDriveAdvanced::initialized() const {return initialized_;}
 
-void EcSensoDrive::processData(size_t index, uint8_t * domain_address)
+void EcSensoDriveAdvanced::processData(size_t index, uint8_t * domain_address)
 {
 
   // Special case: ControlWord
@@ -106,7 +106,7 @@ void EcSensoDrive::processData(size_t index, uint8_t * domain_address)
   }
 }
 
-void EcSensoDrive::offset_position(uint32_t product_id_) {
+void EcSensoDriveAdvanced::offset_position(uint32_t product_id_) {
 
   // int max_expected_num_pdos = 100;
   int num_updated_offsets = 0;
@@ -147,19 +147,19 @@ void EcSensoDrive::offset_position(uint32_t product_id_) {
 
 }
 
-bool EcSensoDrive::is_tpdo_position_channel(size_t index)
+bool EcSensoDriveAdvanced::is_tpdo_position_channel(size_t index)
 {
   return ((pdo_channels_info_[index].pdo_type == ethercat_interface::TPDO) &&
           (pdo_channels_info_[index].interface_name.compare("position") == 0));
 }
 
-bool EcSensoDrive::is_rpdo_position_channel(size_t index)
+bool EcSensoDriveAdvanced::is_rpdo_position_channel(size_t index)
 {
   return ((pdo_channels_info_[index].pdo_type == ethercat_interface::RPDO) &&
           (pdo_channels_info_[index].interface_name.compare("position") == 0));
 }
 
-bool EcSensoDrive::setupSlave(
+bool EcSensoDriveAdvanced::setupSlave(
   std::unordered_map<std::string, std::string> slave_paramters,
   std::vector<double> * state_interface,
   std::vector<double> * command_interface)
@@ -173,7 +173,7 @@ bool EcSensoDrive::setupSlave(
       return false;
     }
   } else {
-    std::cerr << "EcSensoDrive: failed to find 'slave_config' tag in URDF." << std::endl;
+    std::cerr << "EcSensoDriveAdvanced: failed to find 'slave_config' tag in URDF." << std::endl;
     return false;
   }
 
@@ -195,7 +195,7 @@ bool EcSensoDrive::setupSlave(
   return true;
 }
 
-bool EcSensoDrive::setup_from_config(YAML::Node drive_config)
+bool EcSensoDriveAdvanced::setup_from_config(YAML::Node drive_config)
 {
   if (!GenericEcSlave::setup_from_config(drive_config)) {return false;}
   // additional configuration parameters for SENSO Drives
@@ -208,16 +208,16 @@ bool EcSensoDrive::setup_from_config(YAML::Node drive_config)
   return true;
 }
 
-bool EcSensoDrive::setup_from_config_file(std::string config_file)
+bool EcSensoDriveAdvanced::setup_from_config_file(std::string config_file)
 {
   // Read drive configuration from YAML file
   try {
     slave_config_ = YAML::LoadFile(config_file);
   } catch (const YAML::ParserException & ex) {
-    std::cerr << "EcSensoDrive: failed to load drive configuration: " << ex.what() << std::endl;
+    std::cerr << "EcSensoDriveAdvanced: failed to load drive configuration: " << ex.what() << std::endl;
     return false;
   } catch (const YAML::BadFile & ex) {
-    std::cerr << "EcSensoDrive: failed to load drive configuration: " << ex.what() << std::endl;
+    std::cerr << "EcSensoDriveAdvanced: failed to load drive configuration: " << ex.what() << std::endl;
     return false;
   }
   if (!setup_from_config(slave_config_)) {
@@ -227,7 +227,7 @@ bool EcSensoDrive::setup_from_config_file(std::string config_file)
 }
 
 /** returns device state based upon the status_word */
-DeviceState EcSensoDrive::deviceState(uint16_t status_word)
+DeviceState EcSensoDriveAdvanced::deviceState(uint16_t status_word)
 {
   if ((status_word & 0b01001111) == 0b00000000) {
     return STATE_NOT_READY_TO_SWITCH_ON;
@@ -250,7 +250,7 @@ DeviceState EcSensoDrive::deviceState(uint16_t status_word)
 }
 
 /** returns the control word that will take device from state to next desired state */
-uint16_t EcSensoDrive::transition(DeviceState state, uint16_t control_word)
+uint16_t EcSensoDriveAdvanced::transition(DeviceState state, uint16_t control_word)
 {
   switch (state) {
     case STATE_START:                     // -> STATE_NOT_READY_TO_SWITCH_ON (automatic)
@@ -286,4 +286,4 @@ uint16_t EcSensoDrive::transition(DeviceState state, uint16_t control_word)
 
 #include <pluginlib/class_list_macros.hpp>
 
-PLUGINLIB_EXPORT_CLASS(ethercat_generic_plugins::EcSensoDrive, ethercat_interface::EcSlave)
+PLUGINLIB_EXPORT_CLASS(ethercat_generic_plugins::EcSensoDriveAdvanced, ethercat_interface::EcSlave)

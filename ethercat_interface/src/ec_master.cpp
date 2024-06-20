@@ -431,12 +431,12 @@ void EcMaster::checkDomainState(uint32_t domain)
   ec_domain_state_t ds;
   ecrt_domain_state(domain_info->domain, &ds);
 
-  if (ds.working_counter != domain_info->domain_state.working_counter) {
-    printf("Domain: WC %u.\n", ds.working_counter);
-  }
-  if (ds.wc_state != domain_info->domain_state.wc_state) {
-    printf("Domain: State %u.\n", ds.wc_state);
-  }
+  // if (ds.working_counter != domain_info->domain_state.working_counter) {
+  //   printf("Domain: WC %u.\n", ds.working_counter);
+  // }
+  // if (ds.wc_state != domain_info->domain_state.wc_state) {
+  //   printf("Domain: State %u.\n", ds.wc_state);
+  // }
   domain_info->domain_state = ds;
 }
 

@@ -16,8 +16,8 @@
 #define ETHERCAT_GENERIC_PLUGINS__SENSO_COMMON_DEFS_HPP_
 
 #define SENSOD_RPDO_CONTROLWORD  ((uint16_t) 0x6040)
-#define SENSOD_RPDO_POSITION  ((uint16_t) 0x607a)
-#define SENSOD_RPDO_VELOCITY  ((uint16_t) 0x60ff)
+#define SENSOD_RPDO_POSITION  ((uint16_t) 0x277A)  // edited for SensoDrive advanced modes
+#define SENSOD_RPDO_VELOCITY  ((uint16_t) 0x27FF)  // edited for SensoDrive advanced modes
 #define SENSOD_RPDO_EFFORT  ((uint16_t) 0x6071)
 #define SENSOD_RPDO_MODE_OF_OPERATION  ((uint16_t) 0x6060)
 
@@ -52,7 +52,11 @@ enum ModeOfOperation
   MODE_INTERPOLATED_POSITION  = 7,
   MODE_CYCLIC_SYNC_POSITION   = 8,
   MODE_CYCLIC_SYNC_VELOCITY  = 9,
-  MODE_CYCLIC_SYNC_TORQUE     = 10
+  MODE_CYCLIC_SYNC_TORQUE     = 10,
+
+  MODE_CYCLIC_SYNC_POSITION_ADVANCED = -108,  // added for SensoDrive advanced modes
+  MODE_CYCLIC_SYNC_VELOCITY_ADVANCED = -109,  // added for SensoDrive advanced modes
+  MODE_CYCLIC_SYNC_TORQUE_ADVANCED = -110  // added for SensoDrive advanced modes
 };
 
 const std::map<DeviceState, std::string> DEVICE_STATE_STR = {

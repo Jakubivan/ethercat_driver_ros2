@@ -54,12 +54,22 @@ void EcSensoDriveAdvanced::processData(size_t index, uint8_t * domain_address)
     }
   }
 
-  // setup current position as default position
+  // setup current position as default position // TODO do not overwrite the firstly read default position
   if (pdo_channels_info_[index].index == SENSOD_RPDO_POSITION) {
-    if (mode_of_operation_display_ != ModeOfOperation::MODE_NO_MODE) {
-      pdo_channels_info_[index].default_value =
-        pdo_channels_info_[index].factor * last_position_ +
-        pdo_channels_info_[index].offset;
+    if (mode_of_operation_display_ != ModeOfOperation::MODE_NO_MODE
+    && ((!std::isnan(pdo_channels_info_[index].default_value) && std::abs(command_interface_ptr_->at(1)) > 1e-6) || (std::isnan(pdo_channels_info_[index].default_value)))){ // TODO (when not ocntrolling, velocity is not 0 but ~1e-16)
+      std::cout << "is default value none: " << std::isnan(pdo_channels_info_[index].default_value) << std::endl;
+
+
+      pdo_channels_info_[index].default_value = pdo_channels_info_[index].factor * last_position_ + pdo_channels_info_[index].offset;
+      
+      std::cout << "Overriding default position: " << pdo_channels_info_[index].default_value << " for index: " << index << std::endl;
+      
+      std::cout << "0: " << command_interface_ptr_->at(0) << std::endl;
+      std::cout << "1: " << command_interface_ptr_->at(1) << std::endl;
+      std::cout << "2: " << command_interface_ptr_->at(2) << std::endl;
+      // std::cout << "1: " << command_interface_ptr_->at(1) << std::endl;
+      // std::cout << "1: " << command_interface_ptr_->at(1) << std::endl;
     }
     pdo_channels_info_[index].override_command =
       (mode_of_operation_display_ != ModeOfOperation::MODE_CYCLIC_SYNC_POSITION_ADVANCED) ? true : false;  // added for SensoDrive advanced modes

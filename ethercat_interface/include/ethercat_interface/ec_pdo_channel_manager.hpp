@@ -112,7 +112,6 @@ public:
       if (pdo_type == TPDO) {
           ec_read(domain_address);
           if (interface_index >= 0) {
-            // if (!interface_name.compare("position"))std::cout << "channel " << index << "interface index: " << interface_index << ", name: " << interface_name << ", last value: " << last_value << std::endl;
             if (last_value == 0.0) last_value = -position_offset;
             state_interface_ptr_->at(interface_index) = last_value + position_offset;  // position_offset defined in xacro ros2_control file
           }
@@ -127,8 +126,6 @@ public:
           } else {
               if (!std::isnan(default_value)) {
                   ec_write(domain_address, default_value);
-
-                  if (!interface_name.compare("position"))std::cout << "channel " << index << ", interface_index " << interface_index << ", name: " << interface_name << ", default value: " << default_value << std::endl;
               }
           }
       }

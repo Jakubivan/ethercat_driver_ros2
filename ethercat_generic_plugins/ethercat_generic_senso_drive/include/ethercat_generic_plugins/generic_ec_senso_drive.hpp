@@ -70,6 +70,7 @@ protected:
   double position_offset_ = 0.0;
   double last_position_ = std::numeric_limits<double>::quiet_NaN();
 
+
   /** returns device state based upon the status_word */
   DeviceState deviceState(uint16_t status_word);
   /** returns the control word that will take device from state to next desired state */

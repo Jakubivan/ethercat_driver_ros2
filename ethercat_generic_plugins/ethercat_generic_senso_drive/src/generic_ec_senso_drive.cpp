@@ -54,20 +54,38 @@ void EcSensoDrive::processData(size_t index, uint8_t * domain_address)
     }
   }
 
-  // setup current position as default position
-  if (pdo_channels_info_[index].index == SENSOD_RPDO_POSITION) {
-    if (mode_of_operation_display_ != ModeOfOperation::MODE_NO_MODE) {
-      pdo_channels_info_[index].default_value =
-        pdo_channels_info_[index].factor * last_position_ +
-        pdo_channels_info_[index].offset;
+  // setup current position as default position only when default position is not set yet or when drive is commanded to move (velocity is bigger than 1e-6)
+  if (pdo_channels_info_[index].index == SENSOD_RPDO_POSITION || pdo_channels_info_[index].index == SENSOD_RPDO_POSITION_ADVANCED) {
+    if ((mode_of_operation_display_ != ModeOfOperation::MODE_NO_MODE)
+    && (last_position_ != 0)
+    && ((pdo_channels_info_[index].is_default_position_set_ && std::abs(command_interface_ptr_->at(1)) > 1e-6) || (!pdo_channels_info_[index].is_default_position_set_))){ 
+      
+  
+      pdo_channels_info_[index].default_value = pdo_channels_info_[index].factor * last_position_ + pdo_channels_info_[index].offset;
+
+      // std::cout << "Overriding default position: " << pdo_channels_info_[index].default_value << " for index: " << index << std::endl;
+      
+      if (!pdo_channels_info_[index].is_default_position_set_) {
+        if ((pdo_channels_info_[index].counter_default_position_>500) || ((!std::isnan(pdo_channels_info_[index].previous_default_position_)) && (std::abs(pdo_channels_info_[index].previous_default_position_ - pdo_channels_info_[index].default_value) > 999))) {
+          pdo_channels_info_[index].is_default_position_set_ = true;
+          std::cout << "Default position set to " << pdo_channels_info_[index].default_value << " for index: " << index << " with " << std::dec << pdo_channels_info_[index].counter_default_position_ - 1 << " iterations" << std::endl;
+        } else {
+          pdo_channels_info_[index].counter_default_position_++;
+          // std::cout << std::dec; // Ensure the output is in decimal format
+          // std::cout << "Counter: " << pdo_channels_info_[index].counter_default_position_ << " for index: " << index<< std::endl;
+        }
+      }
+
+      pdo_channels_info_[index].previous_default_position_ = pdo_channels_info_[index].default_value;
+
     }
     pdo_channels_info_[index].override_command =
-      (mode_of_operation_display_ != ModeOfOperation::MODE_CYCLIC_SYNC_POSITION) ? true : false;
+      (mode_of_operation_display_ != ModeOfOperation::MODE_CYCLIC_SYNC_POSITION && mode_of_operation_display_ != ModeOfOperation::MODE_CYCLIC_SYNC_POSITION_ADVANCED) ? true : false;
   }
 
   // setup mode of operation
   if (pdo_channels_info_[index].index == SENSOD_RPDO_MODE_OF_OPERATION) {
-    if (mode_of_operation_ >= 0 && mode_of_operation_ <= 10) {
+    if ((mode_of_operation_ >= 0 && mode_of_operation_ <= 10) || mode_of_operation_ == -108) {
       pdo_channels_info_[index].default_value = mode_of_operation_;
     }
   }

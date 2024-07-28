@@ -112,8 +112,13 @@ public:
       if (pdo_type == TPDO) {
           ec_read(domain_address);
           if (interface_index >= 0) {
-            if (last_value == 0.0) last_value = -position_offset;
-            state_interface_ptr_->at(interface_index) = last_value + position_offset;  // position_offset defined in xacro ros2_control file
+            if (last_value == 0.0) {  
+             state_interface_ptr_->at(interface_index) = 0;
+            //  if (interface_name.compare("position") == 0) std::cout << "if_else_1: " << last_value << std::endl;
+            } else {
+              state_interface_ptr_->at(interface_index) = last_value + position_offset;  // position_offset defined in xacro ros2_control file
+              // if (interface_name.compare("position") == 0)  std::cout << "if_else_2: " << last_value + position_offset << std::endl;
+            }
           }
       } else if (pdo_type == RPDO && allow_ec_write) {
           if (interface_index >= 0 &&
@@ -123,9 +128,11 @@ public:
               !override_command)
           {
               ec_write(domain_address, factor * (command_interface_ptr_->at(interface_index) - position_offset) + offset);
+              if (interface_index == 0) std::cout << "cmd value:  " << command_interface_ptr_->at(interface_index) << ", position offset: " << position_offset << ", offset: " << offset << std::endl;
           } else {
               if (!std::isnan(default_value)) {
                   ec_write(domain_address, default_value);
+                  // if (interface_index == 0) std::cout << "default_value: " << default_value << std::endl;
               }
           }
       }
@@ -220,6 +227,9 @@ public:
   double factor = 1;
   double offset = 0;
   double position_offset = 0;
+  double previous_default_position_ = std::numeric_limits<double>::quiet_NaN();
+  bool is_default_position_set_ = false;
+  uint16_t counter_default_position_ = 0;
 
 private:
   std::vector<double> * command_interface_ptr_;

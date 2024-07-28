@@ -63,16 +63,16 @@ void EcSensoDrive::processData(size_t index, uint8_t * domain_address)
   
       pdo_channels_info_[index].default_value = pdo_channels_info_[index].factor * last_position_ + pdo_channels_info_[index].offset;
 
-      std::cout << "Overriding default position: " << pdo_channels_info_[index].default_value << " for index: " << index << std::endl;
+      // std::cout << "Overriding default position: " << pdo_channels_info_[index].default_value << " for index: " << index << std::endl;
       
       if (!pdo_channels_info_[index].is_default_position_set_) {
         if ((pdo_channels_info_[index].counter_default_position_>500) || ((!std::isnan(pdo_channels_info_[index].previous_default_position_)) && (std::abs(pdo_channels_info_[index].previous_default_position_ - pdo_channels_info_[index].default_value) > 999))) {
           pdo_channels_info_[index].is_default_position_set_ = true;
-          std::cout << "Default position already set for index: " << index << std::endl;
+          std::cout << "Default position set to " << pdo_channels_info_[index].default_value << " for index: " << index << " with " << std::dec << pdo_channels_info_[index].counter_default_position_ - 1 << " iterations" << std::endl;
         } else {
           pdo_channels_info_[index].counter_default_position_++;
-          std::cout << std::dec; // Ensure the output is in decimal format
-          std::cout << "Counter: " << pdo_channels_info_[index].counter_default_position_ << " for index: " << index<< std::endl;
+          // std::cout << std::dec; // Ensure the output is in decimal format
+          // std::cout << "Counter: " << pdo_channels_info_[index].counter_default_position_ << " for index: " << index<< std::endl;
         }
       }
 

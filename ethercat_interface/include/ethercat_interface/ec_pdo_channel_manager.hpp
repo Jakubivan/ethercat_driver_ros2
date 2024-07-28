@@ -128,7 +128,7 @@ public:
               !override_command)
           {
               ec_write(domain_address, factor * (command_interface_ptr_->at(interface_index) - position_offset) + offset);
-              if (interface_index == 0) std::cout << "cmd value:  " << command_interface_ptr_->at(interface_index) << ", position offset: " << position_offset << ", offset: " << offset << std::endl;
+              // if (interface_index == 0) std::cout << "cmd value:  " << command_interface_ptr_->at(interface_index) << ", position offset: " << position_offset << ", offset: " << offset << std::endl;
           } else {
               if (!std::isnan(default_value)) {
                   ec_write(domain_address, default_value);

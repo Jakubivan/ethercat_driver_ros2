@@ -57,8 +57,7 @@ void EcSensoDrive::processData(size_t index, uint8_t * domain_address)
   // setup current position as default position only when default position is not set yet or when drive is commanded to move (velocity is bigger than 1e-6)
   if (pdo_channels_info_[index].index == SENSOD_RPDO_POSITION || pdo_channels_info_[index].index == SENSOD_RPDO_POSITION_ADVANCED) {
     if ((mode_of_operation_display_ != ModeOfOperation::MODE_NO_MODE)
-    && (last_position_ != 0)
-    && ((pdo_channels_info_[index].is_default_position_set_ && std::abs(command_interface_ptr_->at(1)) > 1e-6) || (!pdo_channels_info_[index].is_default_position_set_))){ 
+    && ((pdo_channels_info_[index].is_default_position_set_ && std::abs(command_interface_ptr_->at(1)) > 1e-2) || (!pdo_channels_info_[index].is_default_position_set_))){ 
       
   
       pdo_channels_info_[index].default_value = pdo_channels_info_[index].factor * last_position_ + pdo_channels_info_[index].offset;
@@ -66,7 +65,7 @@ void EcSensoDrive::processData(size_t index, uint8_t * domain_address)
       // std::cout << "Overriding default position: " << pdo_channels_info_[index].default_value << " for index: " << index << std::endl;
       
       if (!pdo_channels_info_[index].is_default_position_set_) {
-        if ((pdo_channels_info_[index].counter_default_position_>500) || ((!std::isnan(pdo_channels_info_[index].previous_default_position_)) && (std::abs(pdo_channels_info_[index].previous_default_position_ - pdo_channels_info_[index].default_value) > 999))) {
+        if ((pdo_channels_info_[index].counter_default_position_>1000) || ((!std::isnan(pdo_channels_info_[index].previous_default_position_)) && (std::abs(pdo_channels_info_[index].previous_default_position_ - pdo_channels_info_[index].default_value) > 999))) {
           pdo_channels_info_[index].is_default_position_set_ = true;
           std::cout << "Default position set to " << pdo_channels_info_[index].default_value << " for index: " << index << " with " << std::dec << pdo_channels_info_[index].counter_default_position_ - 1 << " iterations" << std::endl;
         } else {
@@ -134,18 +133,20 @@ void EcSensoDrive::offset_position(uint32_t product_id_) {
     try {
       // we want to shift state and command interface channel (position T+R PDO)
       if (is_tpdo_position_channel(index)) {
-        pdo_channels_info_[index].position_offset = position_offset_;
+        // pdo_channels_info_[index].position_offset = position_offset_;
+        pdo_channels_info_[index].setPositionOffsetPtr(&position_offset_);
         num_updated_offsets++;
 
 
-        std::cout << "Slave product_id_: " << std::hex << product_id_ << ", updated TxPDO position offset  to value: " << position_offset_ << std::endl;
+        // std::cout << "Slave product_id_: " << std::hex << product_id_ << ", updated TxPDO position offset  to value: " << position_offset_ << std::endl;
       }
 
       if (is_rpdo_position_channel(index)) {
-        pdo_channels_info_[index].position_offset = position_offset_;
+        // pdo_channels_info_[index].position_offset = position_offset_;
+        pdo_channels_info_[index].setPositionOffsetPtr(&position_offset_);
         num_updated_offsets++;
 
-        std::cout << "Slave product_id_: " << std::hex << product_id_ << ", updated RxPDO position offset  to value: " << position_offset_ << std::endl;
+        // std::cout << "Slave product_id_: " << std::hex << product_id_ << ", updated RxPDO position offset  to value: " << position_offset_ << std::endl;
       }
 
     }

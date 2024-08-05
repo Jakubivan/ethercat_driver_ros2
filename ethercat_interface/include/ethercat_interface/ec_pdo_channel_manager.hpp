@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <cmath>
 
 #include "yaml-cpp/yaml.h"
 
@@ -50,7 +51,14 @@ public:
   }
 
   double getPositionOffsetPtrValue() {
-    return interface_name.compare("position") == 0 ? *position_offset_ptr_ : 0.0;  
+    double return_value = 0;
+    if (position_offset_ptr_ && interface_name.compare("position") == 0) {
+      return_value = *position_offset_ptr_; 
+    } else {
+      return_value = 0;
+    }
+
+    return return_value;  
   }
 
 
@@ -82,18 +90,20 @@ public:
 
     last_value = factor * last_value + offset;
 
-    if (last_value != 0.0 && interface_name.compare("position") == 0 && !is_overflow_checked) {
-      if (last_value > 3.14159265358979323846) {
-        std::cout << "..\n..\n..\nposition overflow detected +, position is: " << last_value << std::endl;
-        if (!setPositionOffset(-6.28318530717958647692)) return last_value;
+    if (!is_overflow_checked && interface_name.compare("position") == 0 && last_value != 0.0) {
 
-      } else if (last_value < -3.14159265358979323846) {
-        std::cout << "..\n..\n..\nposition overflow detected -, position is: " << last_value << std::endl;
-        if (!setPositionOffset(6.28318530717958647692)) return last_value;
+      // if value is greater than pi or smaller than -pi, set position offset
+      if (last_value > M_PI) {
+        std::cout << "..\n..\nPosition overflow detected (+), position is: " << last_value << "\n.." << std::endl;
+        if (!setPositionOffset(-2*M_PI)) return last_value;
+
+      } else if (last_value < -M_PI) {
+        std::cout << "..\n..\nPosition overflow detected (-), position is: " << last_value << "\n.." << std::endl;
+        if (!setPositionOffset(+2*M_PI)) return last_value;
       }
       
       else {
-        std::cout << "..\n..\n..\nposition overflow not detected, position is: " << last_value << std::endl;
+        std::cout << "..\n..\nPosition overflow NOT detected, position is: " << last_value << "\n.." << std::endl;
       }
       is_overflow_checked = true;
     }
@@ -140,10 +150,8 @@ public:
           if (interface_index >= 0) {
              if (last_value == 0.0) {  
               state_interface_ptr_->at(interface_index) = 0;
-             //  if (interface_name.compare("position") == 0) std::cout << "if_else_1: " << last_value << std::endl;
              } else {
                state_interface_ptr_->at(interface_index) = last_value + getPositionOffsetPtrValue() ; 
-              //  if (interface_name.compare("position") == 0)  std::cout << "if_else_2: " << last_value << ", " << getPositionOffsetPtrValue() << std::endl;
              }
           }
       } else if (pdo_type == RPDO && allow_ec_write) {
@@ -158,7 +166,6 @@ public:
           } else {
               if (!std::isnan(default_value)) {
                   ec_write(domain_address, default_value);
-                  // if (interface_index == 0) std::cout << "default_value: " << default_value << std::endl;
               }
           }
       }

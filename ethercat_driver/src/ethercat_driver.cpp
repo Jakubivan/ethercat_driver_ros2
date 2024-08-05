@@ -328,7 +328,7 @@ CallbackReturn EthercatDriver::on_activate(
     if (isAllInit) {
       running = false;
       for (auto & module : ec_modules_) {
-        module->offset_position(module->product_id_);
+        module->set_position_offset_ptrs(module->product_id_);
         
       }
     }

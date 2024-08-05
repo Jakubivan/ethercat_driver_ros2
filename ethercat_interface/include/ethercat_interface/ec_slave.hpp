@@ -37,7 +37,7 @@ public:
   virtual ~EcSlave() {}
   /** read or write data to the domain */
   virtual void processData(size_t /*index*/, uint8_t * /*domain_address*/) {}
-  virtual void offset_position(uint32_t product_id_) {}
+  virtual void set_position_offset_ptrs(uint32_t product_id_) {}
   /** a pointer to syncs. return &syncs[0] */
   virtual const ec_sync_info_t * syncs() {return NULL;}
   virtual bool initialized() {return true;}

@@ -39,7 +39,7 @@ public:
   /** Returns true if drive has reached "operation enabled" state.
    *  The transition through the state machine is handled automatically. */
   virtual bool initialized() const;
-  void offset_position(uint32_t product_id_);
+  void set_position_offset_ptrs(uint32_t product_id_);
 
   virtual void processData(size_t index, uint8_t * domain_address);
 

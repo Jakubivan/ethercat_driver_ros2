@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <cmath>
 
 #include "yaml-cpp/yaml.h"
 
@@ -44,6 +45,22 @@ public:
     command_interface_ptr_ = command_interface;
     state_interface_ptr_ = state_interface;
   }
+
+  void setPositionOffsetPtr(double * position_offset_ptr) {
+    position_offset_ptr_ = position_offset_ptr;
+  }
+
+  double getPositionOffsetPtrValue() {
+    double return_value = 0;
+    if (position_offset_ptr_ && interface_name.compare("position") == 0) {
+      return_value = *position_offset_ptr_; 
+    } else {
+      return_value = 0;
+    }
+
+    return return_value;  
+  }
+
 
   ec_pdo_entry_info_t get_pdo_entry_info() {return {index, sub_index, type2bits(data_type)};}
 
@@ -70,7 +87,26 @@ public:
     } else {
       last_value = static_cast<double>(EC_READ_U8(domain_address) & data_mask);
     }
+
     last_value = factor * last_value + offset;
+
+    if (!is_overflow_checked && interface_name.compare("position") == 0 && last_value != 0.0) {
+
+      // if value is greater than pi or smaller than -pi, set position offset
+      if (last_value > M_PI) {
+        std::cout << "..\n..\nPosition overflow detected (+), position is: " << last_value << "\n.." << std::endl;
+        if (!setPositionOffset(-2*M_PI)) return last_value;
+
+      } else if (last_value < -M_PI) {
+        std::cout << "..\n..\nPosition overflow detected (-), position is: " << last_value << "\n.." << std::endl;
+        if (!setPositionOffset(+2*M_PI)) return last_value;
+      }
+      
+      else {
+        std::cout << "..\n..\nPosition overflow NOT detected, position is: " << last_value << "\n.." << std::endl;
+      }
+      is_overflow_checked = true;
+    }
     return last_value;
   }
 
@@ -112,27 +148,24 @@ public:
       if (pdo_type == TPDO) {
           ec_read(domain_address);
           if (interface_index >= 0) {
-            if (last_value == 0.0) {  
-             state_interface_ptr_->at(interface_index) = 0;
-            //  if (interface_name.compare("position") == 0) std::cout << "if_else_1: " << last_value << std::endl;
-            } else {
-              state_interface_ptr_->at(interface_index) = last_value + position_offset;  // position_offset defined in xacro ros2_control file
-              // if (interface_name.compare("position") == 0)  std::cout << "if_else_2: " << last_value + position_offset << std::endl;
-            }
+             if (last_value == 0.0) {  
+              state_interface_ptr_->at(interface_index) = 0;
+             } else {
+               state_interface_ptr_->at(interface_index) = last_value + getPositionOffsetPtrValue() ; 
+             }
           }
       } else if (pdo_type == RPDO && allow_ec_write) {
           if (interface_index >= 0 &&
               !std::isnan(command_interface_ptr_->at(interface_index)) &&
               command_interface_ptr_->at(interface_index) != 0.0 &&
-              abs((factor * (command_interface_ptr_->at(interface_index) - position_offset) + offset) - default_value) < 16697 /*~0.2rad max diff (safety)*/ &&
+              abs((factor * (command_interface_ptr_->at(interface_index) - getPositionOffsetPtrValue() ) + offset) - default_value) < 16697 /*~0.2rad max diff (safety)*/ &&
               !override_command)
           {
-              ec_write(domain_address, factor * (command_interface_ptr_->at(interface_index) - position_offset) + offset);
+              ec_write(domain_address, factor * (command_interface_ptr_->at(interface_index) - getPositionOffsetPtrValue() ) + offset);
               // if (interface_index == 0) std::cout << "cmd value:  " << command_interface_ptr_->at(interface_index) << ", position offset: " << position_offset << ", offset: " << offset << std::endl;
           } else {
               if (!std::isnan(default_value)) {
                   ec_write(domain_address, default_value);
-                  // if (interface_index == 0) std::cout << "default_value: " << default_value << std::endl;
               }
           }
       }
@@ -213,6 +246,17 @@ public:
     return -1;
   }
 
+bool setPositionOffset(double newValue) {
+    if (position_offset_ptr_) {
+        *position_offset_ptr_ = newValue;
+    } else {
+        std::cerr << "position_offset_ptr_ is null." << std::endl;
+        return false;
+    }
+    return true;
+}
+
+
   PdoType pdo_type;
   uint16_t index;
   uint8_t sub_index;
@@ -230,11 +274,14 @@ public:
   double previous_default_position_ = std::numeric_limits<double>::quiet_NaN();
   bool is_default_position_set_ = false;
   uint16_t counter_default_position_ = 0;
+  bool is_overflow_checked = false;
+  
 
 private:
   std::vector<double> * command_interface_ptr_;
   std::vector<double> * state_interface_ptr_;
   uint8_t buffer_ = 0;
+  double * position_offset_ptr_;
 
   int popcount(uint8_t x)
   {
